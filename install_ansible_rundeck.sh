@@ -14,7 +14,7 @@ USERPASSWORD=onemarcfifty
 
 apt update
 apt -y upgrade
-apt install -y python3 pip sudo wget curl git nmap
+apt install -y python3 pipx sudo wget curl git nmap
 
 # now let's add the rundeck user
 
@@ -26,10 +26,6 @@ echo "rundeck:$USERPASSWORD" | chpasswd
 
 echo "rundeck  ALL=(ALL)  NOPASSWD: ALL" >/etc/sudoers.d/rundeck 
 
-# install ansible through pip
-
-pip install ansible
-
 # download the rundeck installation script and run it directly
 # then install rundeck
 
@@ -38,7 +34,7 @@ apt update
 apt -y install rundeck
 
 # replace the localhost entries in the config files with the hostname
-
+sed -i s/admin:admin/admin:$USERPASSWORD/g /etc/rundeck/realm.properties
 sed -i s/localhost/`hostname`/g /etc/rundeck/framework.properties
 sed -i s/localhost/`hostname`/g /etc/rundeck/rundeck-config.properties
 
@@ -71,10 +67,21 @@ RANDOMPASSWORD="nothing here"
 /etc/init.d/rundeckd start
 systemctl enable rundeckd
 
+# install ansible through pipx
+sudo su - rundeck -c "cat > /var/lib/rundeck/install-ansible.sh << 'EOF' 
+pipx install --include-deps ansible
+pipx inject ansible argcomplete
+pipx inject --include-apps ansible argcomplete
+pipx ensurepath
+EOF"
+sudo su - rundeck -c "chmod 755 install-ansible.sh"
+sudo su - rundeck -c "./install-ansible.sh"
+sudo su - rundeck -c "rm install-ansible.sh"
+
 # now let's install visual studio code server (vscode-server)
 
-wget https://github.com/coder/code-server/releases/download/v4.6.0/code-server_4.6.0_amd64.deb
-sudo apt install ./code-server_4.6.0_amd64.deb
+wget https://github.com/coder/code-server/releases/download/v4.16.1/code-server_4.16.1_amd64.deb
+sudo apt install ./code-server_4.16.1_amd64.deb
 
 # now we need to configure a systemd unit file so that
 # code-server starts automatically
@@ -100,4 +107,3 @@ EOF
 systemctl daemon-reload
 systemctl enable code-server.service
 systemctl start code-server.service
-
