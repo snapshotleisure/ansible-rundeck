@@ -26,15 +26,6 @@ echo "rundeck:$USERPASSWORD" | chpasswd
 
 echo "rundeck  ALL=(ALL)  NOPASSWD: ALL" >/etc/sudoers.d/rundeck 
 
-# install ansible through pip
-sudo su - rundeck <<'EOF' 
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install ansible
-python3 -m pip install requests
-python3 -m pip install proxmoxer
-EOF
-
 # download the rundeck installation script and run it directly
 # then install rundeck
 
@@ -75,6 +66,15 @@ RANDOMPASSWORD="nothing here"
 
 /etc/init.d/rundeckd start
 systemctl enable rundeckd
+
+# install ansible through pip
+sudo su - rundeck <<'EOF' 
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install ansible
+python3 -m pip install requests
+python3 -m pip install proxmoxer
+EOF
 
 # install ansible through pipx
 #sudo su - rundeck -c "cat > /var/lib/rundeck/install-ansible.sh << 'EOF' 
