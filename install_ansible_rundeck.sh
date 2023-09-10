@@ -14,7 +14,7 @@ USERPASSWORD=onemarcfifty
 
 apt update
 apt -y upgrade
-apt install -y python3 pipx sudo wget curl git nmap
+apt install -y python3-full pip sudo wget curl git nmap
 
 # now let's add the rundeck user
 
@@ -25,6 +25,15 @@ echo "rundeck:$USERPASSWORD" | chpasswd
 # (needs review) 
 
 echo "rundeck  ALL=(ALL)  NOPASSWD: ALL" >/etc/sudoers.d/rundeck 
+
+# install ansible through pip
+sudo su - rundeck <<'EOF' 
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install ansible
+python3 -m pip install requests
+python3 -m pip install proxmoxer
+EOF
 
 # download the rundeck installation script and run it directly
 # then install rundeck
@@ -68,15 +77,15 @@ RANDOMPASSWORD="nothing here"
 systemctl enable rundeckd
 
 # install ansible through pipx
-sudo su - rundeck -c "cat > /var/lib/rundeck/install-ansible.sh << 'EOF' 
-pipx install --include-deps ansible
-pipx inject ansible argcomplete
-pipx inject --include-apps ansible argcomplete
-pipx ensurepath
-EOF"
-sudo su - rundeck -c "chmod 755 install-ansible.sh"
-sudo su - rundeck -c "./install-ansible.sh"
-sudo su - rundeck -c "rm install-ansible.sh"
+#sudo su - rundeck -c "cat > /var/lib/rundeck/install-ansible.sh << 'EOF' 
+#pipx install --include-deps ansible
+#pipx inject ansible argcomplete
+#pipx inject --include-apps ansible argcomplete
+#pipx ensurepath
+#EOF"
+#sudo su - rundeck -c "chmod 755 install-ansible.sh"
+#sudo su - rundeck -c "./install-ansible.sh"
+#sudo su - rundeck -c "rm install-ansible.sh"
 
 # now let's install visual studio code server (vscode-server)
 
